@@ -26,23 +26,24 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 
-	"github.com/fatedier/frp/assets"
-	"github.com/fatedier/frp/models/config"
-	"github.com/fatedier/frp/models/msg"
-	"github.com/fatedier/frp/models/nathole"
-	"github.com/fatedier/frp/server/controller"
-	"github.com/fatedier/frp/server/group"
-	"github.com/fatedier/frp/server/ports"
-	"github.com/fatedier/frp/server/proxy"
-	"github.com/fatedier/frp/server/stats"
-	"github.com/fatedier/frp/utils/log"
-	frpNet "github.com/fatedier/frp/utils/net"
-	"github.com/fatedier/frp/utils/util"
-	"github.com/fatedier/frp/utils/version"
-	"github.com/fatedier/frp/utils/vhost"
+	"github.com/HaidyCao/frp_0290/assets"
+	"github.com/HaidyCao/frp_0290/models/config"
+	"github.com/HaidyCao/frp_0290/models/msg"
+	"github.com/HaidyCao/frp_0290/models/nathole"
+	"github.com/HaidyCao/frp_0290/server/controller"
+	"github.com/HaidyCao/frp_0290/server/group"
+	"github.com/HaidyCao/frp_0290/server/ports"
+	"github.com/HaidyCao/frp_0290/server/proxy"
+	"github.com/HaidyCao/frp_0290/server/stats"
+	"github.com/HaidyCao/frp_0290/utils/log"
+	frpNet "github.com/HaidyCao/frp_0290/utils/net"
+	"github.com/HaidyCao/frp_0290/utils/util"
+	"github.com/HaidyCao/frp_0290/utils/version"
+	"github.com/HaidyCao/frp_0290/utils/vhost"
 
 	"github.com/fatedier/golib/net/mux"
 	fmux "github.com/hashicorp/yamux"
@@ -278,7 +279,14 @@ func (svr *Service) Run() {
 
 // Stop 停止服务
 func (svr *Service) Stop() error {
-	err := svr.muxer.Close()
+	var err error
+	value := reflect.ValueOf(svr.muxer)
+	lnValue := value.Elem().FieldByName("ln")
+	ln, ok := lnValue.Interface().(net.Listener)
+	if ok && ln != nil {
+		err = ln.Close()
+	}
+
 	if svr.listener != nil {
 		_ = svr.listener.Close()
 	}
